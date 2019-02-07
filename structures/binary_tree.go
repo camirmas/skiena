@@ -1,4 +1,4 @@
-package skiena
+package structures
 
 // import "fmt"
 
@@ -11,6 +11,10 @@ type Node struct {
 	Left   *Node
 	Right  *Node
 	Parent *Node
+}
+
+func NewTree() Tree {
+	return Tree{}
 }
 
 func (t *Tree) Insert(item int) {

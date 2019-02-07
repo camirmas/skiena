@@ -1,4 +1,4 @@
-package skiena
+package problems
 
 func CheckParens(parens string) int {
 	stack := []int{}

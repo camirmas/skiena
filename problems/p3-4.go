@@ -1,4 +1,4 @@
-package skiena
+package problems
 
 type C3p2 []int
 

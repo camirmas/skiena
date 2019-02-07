@@ -1,4 +1,4 @@
-package skiena
+package structures
 
 import "testing"
 

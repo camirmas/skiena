@@ -1,5 +1,7 @@
 package problems
 
+import "errors"
+
 type C3p11a [][]int
 
 func NewC3p11a(list []int) C3p11a {
@@ -36,91 +38,70 @@ func min(list []int) int {
 
 type TreeC3p11b struct {
 	root *Node
-	list []int
 }
 
 type Node struct {
-	Key    int
-	Val    int
-	Left   *Node
-	Right  *Node
-	Parent *Node
+	Min        int
+	LowerBound int
+	UpperBound int
+	Left       *Node
+	Right      *Node
 }
 
 func NewTreeC3p11b(list []int) TreeC3p11b {
-	t := TreeC3p11b{nil, list}
+	root := &Node{min(list), 0, len(list) - 1, nil, nil}
+	t := TreeC3p11b{root}
 
-	for idx, key := range list {
-		t.Insert(key, idx)
-	}
+	t.root.build(list)
 
 	return t
 }
 
-func (t *TreeC3p11b) Insert(key, val int) {
-	if t == nil {
-		return
-	}
-	if t.root == nil {
-		t.root = &Node{key, val, nil, nil, nil}
-	} else {
-		t.root.insert(key, val)
-	}
-}
-
-func (node *Node) insert(key, val int) {
+func (node *Node) build(list []int) {
 	if node == nil {
 		return
 	}
-	if key > node.Key {
-		if node.Right == nil {
-			node.Right = &Node{key, val, nil, nil, node}
+	if len(list) == 0 {
+		return
+	}
+	if len(list) == 1 {
+		i := list[0]
+		if i > node.Min {
+			node.Right = &Node{i, node.LowerBound, node.LowerBound + 1, nil, nil}
+			return
 		} else {
-			node.Right.insert(key, val)
-		}
-	} else {
-		if node.Left == nil {
-			node.Left = &Node{key, val, nil, nil, node}
-		} else {
-			node.Left.insert(key, val)
+			node.Left = &Node{i, node.LowerBound - 1, node.LowerBound, nil, nil}
+			return
 		}
 	}
+	midpoint := len(list) / 2
+	left, right := list[:midpoint], list[midpoint:]
+
+	node.Left = &Node{min(left), 0, midpoint, nil, nil}
+	node.Right = &Node{min(right), midpoint, len(list) - 1, nil, nil}
+
+	node.Left.build(left)
+	node.Right.build(right)
 }
 
-func (t *TreeC3p11b) Search(key int) *Node {
-	if t == nil || t.root == nil {
-		return nil
+func (t *TreeC3p11b) Min(i, j int) (int, error) {
+	return t.root.min(i, j)
+}
+
+func (node *Node) min(i, j int) (int, error) {
+	if i >= j {
+		return 0, errors.New("i must be < j")
 	}
-	return t.root.search(key)
-}
-
-func (node *Node) search(key int) *Node {
 	if node == nil {
-		return nil
+		return 0, errors.New("node is empty")
 	}
-
-	if node.Key == key {
-		return node
-	}
-	if key < node.Key {
-		return node.Left.search(key)
+	if i < node.LowerBound || j > node.UpperBound {
+		return 0, errors.New("Out of bounds")
+	} else if i > node.LowerBound {
+		return node.Right.min(i, j)
+	} else if j < node.UpperBound {
+		return node.Left.min(i, j)
 	} else {
-		return node.Right.search(key)
+		return node.Min, nil
 	}
-}
-
-func (t *TreeC3p11b) Min(i, j int) int {
-	iNode := t.Search(t.list[i])
-
-	min := iNode
-	current := iNode
-
-	for current != nil {
-		if current.Left != nil && current.Val <= j {
-			min = current.Left
-		}
-		current = current.Left
-	}
-
-	return min.Key
 }
